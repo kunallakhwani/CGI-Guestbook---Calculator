@@ -1,0 +1,112 @@
+#! /usr/bin/perl
+
+print "Content-Type: text/html\n\n";
+
+$path = $ENV{'PATH_INFO'};
+$path =~ s/\///;
+$query = $ENV{'QUERY_STRING'};
+
+if ($path eq "calculator" && defined($query) && $query ne ""){
+	CalculatorResult();
+}
+if ($path eq "guestbook" && defined($query) && $query ne ""){
+	GuestbookResult();
+}
+if($path eq "calculator" &&  $query eq "") {
+	Calculator();
+}
+if($path eq "guestbook" && $query eq "") {
+	Guestbook();
+}
+
+sub Calculator {
+	print "<!DOCTYPE html>";
+	print "<html><head><title>Simple Calculator</title></head><body>";
+	print "<b>Simple Calculator</b><br/>";
+	print "<form method=GET name=\"calculator\">";
+	print "Enter first number: <input type=\"text\" name=\"a\"><br/>";
+	print "Enter second number: <input type=\"text\" name=\"b\"><br/>";
+	print "Select Operation: <select name=\"method\">";
+	print "<option value=\"+\">+</option>";
+	print "<option value=\"-\">-</option>";
+	print "<option value=\"*\">*</option>";
+	print "<option value=\"/\">/</option>";
+	print "</select><br/>";
+	print "<input type=\"submit\" name=\"submit\" value=\"Calculate\"><br/>";
+	print "</form></body></html>\n";
+}
+
+sub Guestbook {
+	print "<!DOCTYPE html>";
+	print "<html><head><title>Guestbook</title></head><body>";
+	print "<h3><b>Guestbook</b></h3><br/>";
+	print "<form method=GET name=\"guestbook\">";
+	print "<h3>Previous comments</h3><br/>";
+	DisplayComments();
+	print "<h3>New comment</h3><br/>";
+	print "Enter your name: <input type=\"text\" name=\"name\"><br/>";
+	print "Enter your comment: <textarea rows=\"4\" cols=\"50\" name=\"comment\"></textarea><br/>";
+	print "<input type=\"submit\" name=\"submit\" value=\"Submit\"><br/>";
+	print "</form></body></html>\n";
+}
+
+sub GuestbookResult {
+	@args = split( /\&/, $query);
+	foreach (@args) {
+		($variable, $value) = split(/=/);
+		$value =~ s/\+/ /g;
+		$value =~ s/%(\w\w)/sprintf("%c", hex($1))/ge;
+		$form[$i] = $value;
+		$i++;
+	}
+	open COMMENT, "+>>comments.txt" or die $!;
+	print COMMENT $form[1], " by ", $form[0], "\n";
+	close COMMENT or die $!;
+	Guestbook();
+}
+
+sub DisplayComments {
+	open COMMENTS, "<comments.txt" or die $!;
+	while (<COMMENTS>) {
+		print $_;
+		print "<br/>";
+	}
+	close COMMENTS or die $!;
+}
+
+sub CalculatorResult {
+	print "<!DOCTYPE html>";
+	print "<html><head><title>Simple Calculator Result</title></head><body>";
+	$i=0;
+	@args = split( /\&/, $query);
+	foreach (@args) {
+		($variable, $value) = split(/=/);
+		$value =~ s/\+/ /g;
+		$value =~ s/%(\w\w)/sprintf("%c", hex($1))/ge;
+		$form[$i] = $value;
+		$i++;
+	}
+	print"<h1>Simple Calculator Result:</h1><br/>";
+	print"<h2>";
+	print($form[0], " ", $form[2], " ", $form[1], " = ");
+	print($result = &operation());
+	print "</h2></body></html>\n";
+}
+
+sub operation {
+	if($form[2] eq "+") {
+		return $form[0] + $form[1];
+	}
+	
+	if($form[2] eq "-") {
+		return $form[0] - $form[1];
+	}
+	
+	if($form[2] eq "*") {
+		return $form[0] * $form[1];
+	}
+	
+	if($form[2] eq "/") {
+		return $form[0] / $form[1];
+	}
+}

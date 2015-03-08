@@ -1,0 +1,1 @@
+A CGI Application part_3 developed in Perl, and a comments.txt file which contains comments. The CGI application can be accessed by placing the files under /usr/lib/cgi-bin, running the make command, and then opening http://localhost/part_3 in the browser by providing path as /calculator or /guestbook for respective application.
